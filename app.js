@@ -78,9 +78,16 @@ app.post("/api/expenses", async (req, res) => {
 // app.get("/api/expenses/:index", async (req, res) => {
 //     const { index } = req.params;
 //     console.log(index);
-//     const expenses = await expenseModel.find().skip(index-1).limit(1);
+//     const expenses/ = await expenseModel.find().skip(index-1).limit(1);
 //     res.status(200).json(expenses);
 // });
+
+//function for delete all
+app.delete("/api/expenses", async (req, res) => { 
+    const deletedexpenses = await expenseModel.deleteMany();
+    res.status(200).json(deletedexpenses);
+});
+
 
 
 app.delete("/api/expenses/:id", async (req, res) => {
@@ -96,7 +103,6 @@ app.delete("/api/expenses/:id", async (req, res) => {
         res.status(500).json({ message: "Internal server error", error });
     }
 });
-
 
 
 // // // PATCH by ID
