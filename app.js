@@ -40,8 +40,7 @@ const PORT = 8000;
 //     res.json('Hellooooo World');
 // });
 
-const mongourl = "mongodb://0.0.0.0:27017/practise";      
-
+const mongourl = "mongodb+srv://dineshram2023it:dinesh1234@cluster0.ro6ox.mongodb.net/tracker";      
 const expenseSchema = new mongoose.Schema({
     id: { type: String, required: true, unique: true },
     title: { type: String, required: true },
