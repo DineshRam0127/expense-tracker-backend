@@ -41,8 +41,7 @@ const PORT = 8000;
 //     res.json('Hellooooo World');
 // });
 
-const mongourl = "mongodb+srv://tamilselvanm2023it:tamilselvanm1234@cluster0.wnvpw.mongodb.net/tracker";      
-
+const mongourl = "mongodb+srv://dineshram2023it:dinesh12345@cluster0.ro6ox.mongodb.net/user";      
 const expenseSchema = new mongoose.Schema({
     id: { type: String, required: true, unique: true },
     title: { type: String, required: true },
@@ -200,20 +199,33 @@ app.post("/api/user/register",async(req,res)=>{
     return res.status(200).json({message:"User registered successfully"});
 })
 
+//Login api
 app.post("/api/user/login",async(req,res)=>{
-    const { username, password } = req.body;
-    if (!username || !password) {
-        return res.status(400).json({ message: "Username and password are required" });
+    const {username,password} = req.body;
+//Validation
+    if(!username || !password){
+        return res.status(400).json({message:"Username and password is required"});
     }
-    const user
-        = await User.findOne({ username});
-    if (!user) {
-        return res.status(400).json({ message: "Invalid username or password" });
+
+//Check if user exists
+    const user = await User.findOne({username});
+    if(!user){
+        return res.status(400).json({message:"User not found"});
     }
-    const isPasswordValid = await bcrypt.compare(password, user.password);
-    if (!isPasswordValid) {
-        return res.status(400).json({ message: "Invalid username or password" });
+//Check if password is correct
+    const isPasswordMatch = await bcrypt.compare(password,user.password);
+    
+    if(!isPasswordMatch){
+        return res.status(400).json({message:"Invalid credentials"});
     }
-    return res.status(200).json({ message: "Login successful" });
-}
-)
+
+    // const secret = "learn_nodejs";
+    // const token = jwt.sign({username},secret,{expiresIn:"15s"});
+
+    return res.status(200).json(
+        {message:"Login successful",
+        // token:token,
+        }
+    );
+    
+})
