@@ -26,6 +26,7 @@ const app = express();
 app.use(express.json());
 const mongoose = require('mongoose');
 const { v4: uuidv4 } = require('uuid');
+const bcrypt = require("bcrypt");
 const PORT = 8000;
 
 // app.get('/:id', (req, res) => {
@@ -40,7 +41,8 @@ const PORT = 8000;
 //     res.json('Hellooooo World');
 // });
 
-const mongourl = "mongodb+srv://dineshram2023it:dinesh1234@cluster0.ro6ox.mongodb.net/tracker";      
+const mongourl = "mongodb+srv://tamilselvanm2023it:tamilselvanm1234@cluster0.wnvpw.mongodb.net/tracker";      
+
 const expenseSchema = new mongoose.Schema({
     id: { type: String, required: true, unique: true },
     title: { type: String, required: true },
@@ -70,62 +72,16 @@ app.post("/api/expenses", async (req, res) => {
 
 //Get all
 // app.get("/api/expenses/", async (req, res) => {
-//     const expenses = await expenseModel.find().limit(10);
+//     const expenses = await expenseModel.find().limit();
 //     res.status(200).json(expenses);
 // });
 
-// //Get by Index
-// app.get("/api/expenses/:index", async (req, res) => {
-//     const { index } = req.params;
-//     console.log(index);
-//     const expenses/ = await expenseModel.find().skip(index-1).limit(1);
-//     res.status(200).json(expenses);
-// });
-
-//function for delete all
-app.delete("/api/expenses", async (req, res) => { 
-    const deletedexpenses = await expenseModel.deleteMany();
-    res.status(200).json(deletedexpenses);
+//Get by Index
+app.get("/api/expenses/:index", async (req, res) => {
+    const { index } = req.params;
+    const expenses = await expenseModel.find().skip(index-1).limit(1);
+    res.status(200).json(expenses);
 });
-
-
-
-app.delete("/api/expenses/:id", async (req, res) => {
-    try {
-        const { id } = req.params;
-        const deletedExpense = await expenseModel.findOneAndDelete({ id });
-        if (!deletedExpense) {
-            return res.status(404).json({ message: "Expense not found" });
-        }
-        res.status(200).json({ message: "Expense deleted successfully" });
-    } catch (error) {
-        console.error("Error deleting expense:", error);
-        res.status(500).json({ message: "Internal server error", error });
-    }
-});
-
-
-// // // PATCH by ID
-// app.patch("/api/expenses/:id", async (req, res) => {
-//     try {
-//         const { id } = req.params;
-//         const updates = req.body;
-
-//         const updatedExpense = await expenseModel.findOneAndUpdate({ id }, updates, { new: true });
-
-//         if (!updatedExpense) {
-//             return res.status(404).json({ message: "Expense not found" });
-//         }
-
-//         res.status(200).json(updatedExpense);
-//     } catch (error) {
-//         console.error("Error updating expense:", error);
-//         res.status(500).json({ message: "Internal server error", error });
-//     }
-// });
-
-
-
 
 //Get by ID
 // app.get("/api/expenses/:id", async (req, res) => {
@@ -158,3 +114,106 @@ app.put("/api/expenses/:id", async (req, res) => {
         res.status(500).json({ message: "Internal server error", error });
     }
 });
+
+
+// PATCH /api/expenses/:id
+app.patch("/api/expenses/:id", async (req, res) => {
+    try {
+        const { id } = req.params; // Get the id from the route parameter
+        const updateFields = req.body; // Partial fields to update
+
+        if (!updateFields || Object.keys(updateFields).length === 0) {
+            return res.status(400).json({ message: "No fields to update provided" });
+        }
+
+        const updatedExpense = await expenseModel.findOneAndUpdate(
+            { id },
+            updateFields,
+            { new: true } // Return the updated document
+        );
+
+        if (!updatedExpense) {
+            return res.status(404).json({ message: "Expense not found" });
+        }
+
+        res.status(200).json(updatedExpense); // Return the updated expense
+    } catch (error) {
+        console.error("Error patching expense:", error);
+        res.status(500).json({ message: "Internal server error", error });
+    }
+});
+
+
+// DELETE /api/expenses/:id
+app.delete("/api/expenses/:id", async (req, res) => {
+    try {
+        const { id } = req.params; // Get the id from the route parameter
+
+        const deletedExpense = await expenseModel.findOneAndDelete({ id });
+
+        if (!deletedExpense) {
+            return res.status(404).json({ message: "Expense not found" });
+        }
+
+        res.status(200).json({ message: "Expense deleted successfully", deletedExpense });
+    } catch (error) {
+        console.error("Error deleting expense:", error);
+        res.status(500).json({ message: "Internal server error", error });
+    }
+});
+
+
+/Authentication/
+
+//Schema
+const userSchema = new mongoose.Schema({
+    username: {type:String,required:true,unique:true},
+    password:{type:String,required:true},
+    });
+
+//Model
+const User = mongoose.model("User",userSchema);
+
+//Register api
+app.post("/api/user/register",async(req,res)=>{
+    const {username,password} = req.body;
+//Validation
+    if(!username || !password){
+        return res.status(400).json({message:"Username is required"});
+    }
+//Check if user already exists
+    const ExsistingUser = await User.find({username});
+    if(!ExsistingUser){
+        return res.status(400).json({message:"User already exists"});
+    }
+//Hash the password
+    const hashedpass = await bcrypt.hash(password,8);
+
+//Create new user
+    const newUser = new User({
+        username,
+        password:hashedpass,
+    })
+
+    await newUser.save();
+
+    return res.status(200).json({message:"User registered successfully"});
+})
+
+app.post("/api/user/login",async(req,res)=>{
+    const { username, password } = req.body;
+    if (!username || !password) {
+        return res.status(400).json({ message: "Username and password are required" });
+    }
+    const user
+        = await User.findOne({ username});
+    if (!user) {
+        return res.status(400).json({ message: "Invalid username or password" });
+    }
+    const isPasswordValid = await bcrypt.compare(password, user.password);
+    if (!isPasswordValid) {
+        return res.status(400).json({ message: "Invalid username or password" });
+    }
+    return res.status(200).json({ message: "Login successful" });
+}
+)
