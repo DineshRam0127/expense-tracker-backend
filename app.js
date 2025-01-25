@@ -27,6 +27,8 @@ app.use(express.json());
 const mongoose = require('mongoose');
 const { v4: uuidv4 } = require('uuid');
 const bcrypt = require("bcrypt");
+const cors = require('cors');
+app.use(cors());
 const PORT = 8000;
 const jwt=require("jsonwebtoken")
 
