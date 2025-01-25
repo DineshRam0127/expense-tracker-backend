@@ -42,7 +42,7 @@ const jwt=require("jsonwebtoken")
 //     res.json('Hellooooo World');
 // });
 
-const mongourl = "mongodb+srv://dineshram2023it:dinesh12345@cluster0.ro6ox.mongodb.net/";
+const mongourl = "mongodb+srv://dineshram2023it:dinesh12345@cluster0.ro6ox.mongodb.net/test";
 const expenseSchema = new mongoose.Schema({
     id: { type: String, required: true, unique: true },
     title: { type: String, required: true },
@@ -220,7 +220,7 @@ app.post("/api/user/login",async(req,res)=>{
         return res.status(400).json({message:"Invalid credentials"});
     }
 
-    const token = jwt.sign({username},"Dineesh",{expiresIn:"2h"});
+    const token = jwt.sign({username},"Dineesh",{expiresIn:"4h"});
 
     return res.status(200).json(
         {message:"Login successful",
