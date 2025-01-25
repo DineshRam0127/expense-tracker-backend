@@ -28,6 +28,7 @@ const mongoose = require('mongoose');
 const { v4: uuidv4 } = require('uuid');
 const bcrypt = require("bcrypt");
 const PORT = 8000;
+const jwt=require("jsonwebtoken")
 
 // app.get('/:id', (req, res) => {
 //     const { id } = req.params;
@@ -41,7 +42,7 @@ const PORT = 8000;
 //     res.json('Hellooooo World');
 // });
 
-const mongourl = "mongodb+srv://dineshram2023it:dinesh12345@cluster0.ro6ox.mongodb.net/user";      
+const mongourl = "mongodb+srv://dineshram2023it:dinesh12345@cluster0.ro6ox.mongodb.net/";
 const expenseSchema = new mongoose.Schema({
     id: { type: String, required: true, unique: true },
     title: { type: String, required: true },
@@ -219,13 +220,36 @@ app.post("/api/user/login",async(req,res)=>{
         return res.status(400).json({message:"Invalid credentials"});
     }
 
-    // const secret = "learn_nodejs";
-    // const token = jwt.sign({username},secret,{expiresIn:"15s"});
+    const token = jwt.sign({username},"Dineesh",{expiresIn:"2h"});
 
     return res.status(200).json(
         {message:"Login successful",
-        // token:token,
+        token:token,
         }
     );
     
 })
+// Middleware to check JWT
+const authenticateJWT = (req, res, next) => {
+    const authHeader = req.headers.authorization;
+
+    if (authHeader) {
+        const token = authHeader.split(' ')[1];
+
+        jwt.verify(token, "Dineesh", (err, user) => {
+            if (err) {
+                return res.status(403).json({ message: "Forbidden" });
+            }
+
+            req.user = user;
+            next();
+        });
+    } else {
+        res.status(401).json({ message: "Unauthorized" });
+    }
+};
+
+// Example of using the middleware
+app.get("/api/protected", authenticateJWT, (req, res) => {
+    res.status(200).json({ message: "You have accessed a protected route", user: req.user });
+});
