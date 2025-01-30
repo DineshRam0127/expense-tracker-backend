@@ -26,7 +26,7 @@ const app = express();
 app.use(express.json());
 const mongoose = require('mongoose');
 const { v4: uuidv4 } = require('uuid');
-const bcrypt = require("bcrypt");
+const bcrypt = require("bcryptjs"); // Use bcryptjs instead of bcrypt
 const cors = require('cors');
 app.use(cors());
 const PORT = 8000;
